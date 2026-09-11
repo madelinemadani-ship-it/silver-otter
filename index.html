@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baby Name Deck</title>
+<style>
+:root{--bg:#f7f4ef;--card:#fffdf9;--ink:#2f2a25;--muted:#7d746b;--accent:#b78c72;--line:#e5ddd4;--danger:#a95f58;--ok:#527a62}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,serif}.app{max-width:850px;margin:auto;padding:20px 16px 55px}h1,h2{font-weight:500}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px}.top h1{margin:0;font-size:30px}.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}.tabs button{font-size:12px;padding:10px 5px}.tabs .active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}button,input{font:inherit}button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:13px;padding:11px 13px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.55;cursor:wait}.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:28px;min-height:410px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;box-shadow:0 12px 30px rgba(60,45,35,.07)}.name{font-size:clamp(38px,10vw,72px);line-height:1.08;overflow-wrap:anywhere}.choice{width:100%;padding:20px;font-size:clamp(24px,6vw,42px);min-height:90px}.vs{font:14px system-ui;color:var(--muted);margin:20px 0}.small{font:13px system-ui;color:var(--muted);text-align:center;margin:12px 0}.ratingBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:520px;margin-top:28px}.ratingBtns button{padding:18px;font-size:18px}.deckControls{display:flex;gap:8px;margin-top:12px}.deckControls button{flex:1}.table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}.table th,.table td{padding:10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}.table th{font:12px system-ui;color:var(--muted)}.highlight{background:#fffaf3}.section{margin:22px 0}.section h2{font-size:21px;margin:0 0 8px}.pill{display:inline-block;padding:7px 10px;border:1px solid var(--line);border-radius:20px;background:var(--card);margin:3px;font-family:system-ui;font-size:14px}.setup{max-width:520px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:34px;text-align:center}.setup button{width:100%;margin:8px 0;padding:18px;font-size:20px}.hidden{display:none}.status{font:12px system-ui;color:var(--muted);min-height:18px;margin-top:8px}.status.error{color:var(--danger)}.status.ok{color:var(--ok)}.manageBox{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px}.addRow{display:flex;gap:8px;margin-bottom:14px}.addRow input{flex:1;border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}.nameList{display:grid;gap:8px}.nameItem{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:13px;padding:10px 12px;background:#fff}.nameItem span{overflow-wrap:anywhere}.removeBtn{color:var(--danger);padding:7px 10px}.empty{padding:20px;text-align:center;color:var(--muted);font-family:system-ui}.sectionCard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin:18px 0}.actions{display:flex;gap:8px;flex-wrap:wrap}.danger{border-color:#d9b3ae;color:var(--danger)}
+@media(max-width:560px){.tabs{grid-template-columns:repeat(2,1fr)}.top{align-items:center}.top button{font-size:12px;padding:9px}.ratingBtns{grid-template-columns:1fr}.card{min-height:390px;padding:20px}.addRow{flex-direction:column}}
+</style>
+</head>
+<body>
+<div id="setup" class="setup"><h1>Who are you?</h1><p class="small">Choose once on this device. You can change it later.</p><button onclick="setPerson('Madeline')">Madeline</button><button onclick="setPerson('Daniel')">Daniel</button></div>
+<div id="app" class="app hidden">
+  <div class="top"><div><h1>Baby Name Deck</h1><div class="small" id="who"></div></div><button onclick="changePerson()">Switch person</button></div>
+  <div class="tabs">
+    <button data-tab="deck">Deck</button><button data-tab="rate">Rate</button><button data-tab="rank">Head-to-head</button><button data-tab="compare">Compare</button><button data-tab="manage">Manage names</button>
+  </div>
+
+  <section id="deck" class="panel"><div class="card"><div class="name" id="deckName"></div><div class="small">Swipe left or right, or tap Next</div></div><div class="deckControls"><button onclick="shuffleDeck()">🔀 Shuffle</button><button onclick="nextDeck()">Next →</button></div></section>
+
+  <section id="rate" class="panel"><div class="card"><div class="name" id="rateName"></div><div class="small">How do you feel about this name?</div><div class="ratingBtns" id="ratingButtons"><button data-rating="love">❤️ Love it</button><button data-rating="like">👍 Like it</button><button data-rating="maybe">🤔 Maybe</button><button data-rating="no">👎 No</button></div><div class="status" id="rateStatus"></div></div><div class="small" id="rateProgress"></div></section>
+
+  <section id="rank" class="panel"><div class="card"><button id="a" class="choice"></button><div class="vs">vs.</div><button id="b" class="choice"></button><div class="status" id="rankStatus"></div></div><div class="small">Tap the name you prefer. Your head-to-head results are saved separately.</div></section>
+
+  <section id="compare" class="panel"><div id="compareBody"></div></section>
+
+  <section id="manage" class="panel"><div class="manageBox"><h2 style="margin-top:0">Manage names</h2><p class="small" style="text-align:left">Add a name or remove one from the shared deck. Changes appear for both of you.</p><div class="addRow"><input id="newName" placeholder="Add a name" autocomplete="off"><button onclick="addName()">Add</button></div><div class="status" id="manageStatus"></div><div id="nameList" class="nameList"></div></div></section>
+</div>
+<script>
+const SB_URL='https://jlfconzsleyildjjivzc.supabase.co';
+const SB_KEY='sb_publishable_l9sjIeFk_4wQfTahLMaH0Q_mxi-L6i3';
+const TOKEN='CU5VvJPM8yPiGDC8lG95l2oZq0iqcCDJ';
+const PEOPLE=['Madeline','Daniel'];
+let person=localStorage.getItem('babyNamePerson')||'';
+let names=[];
+let ratings={Madeline:{},Daniel:{}};
+let simple={Madeline:{},Daniel:{}};
+let pair=[];
+let deck=[];
+let deckIndex=0;
+let rateIndex=0;
+let saving=false;
+
+async function rpc(fn,args){
+  const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(args)});
+  const raw=await r.text();
+  if(!r.ok) throw new Error(raw||('Request failed ('+r.status+')'));
+  if(!raw || raw==='null') return null;
+  try{return JSON.parse(raw)}catch{return raw}
+}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function setStatus(id,msg,type=''){const el=document.getElementById(id);if(!el)return;el.textContent=msg||'';el.className='status'+(type?' '+type:'')}
+function setPerson(p){person=p;localStorage.setItem('babyNamePerson',p);document.getElementById('setup').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.getElementById('who').textContent='Using this device as '+p;load()}
+function changePerson(){localStorage.removeItem('babyNamePerson');location.reload()}
+async function load(){
+  try{
+    names=await rpc('get_name_deck',{p_token:TOKEN})||[];
+    names=[...new Set(names.map(String).map(n=>n.trim()).filter(Boolean))];
+    for(const p of PEOPLE){
+      const rows=await rpc('get_name_ratings',{p_token:TOKEN,p_person:p})||[];
+      ratings[p]={};
+      if(Array.isArray(rows)) rows.forEach(x=>ratings[p][x.name]=x);
+      simple[p]=await rpc('get_simple_ratings',{p_token:TOKEN,p_person:p})||{};
+    }
+    shuffleDeck();newPair();showRate();renderCompare();renderManage();activateTab('deck');
+  }catch(e){alert('The app could not load its shared data: '+e.message)}
+}
+function activateTab(tab){document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===tab));if(tab==='compare')renderCompare();if(tab==='manage')renderManage()}
+function stat(p,n){return ratings[p][n]||{name:n,wins:0,losses:0,elo:1500}}
+function shuffleDeck(){deck=[...names].sort(()=>Math.random()-.5);deckIndex=0;showDeck()}
+function showDeck(){document.getElementById('deckName').textContent=deck.length?deck[deckIndex]:'No names yet'}
+function nextDeck(){if(!deck.length)return;deckIndex=(deckIndex+1)%deck.length;showDeck()}
+function showRate(){
+  const rated=simple[person]||{};
+  let pool=names.filter(n=>!rated[n]);
+  if(!pool.length) pool=names;
+  if(!pool.length){document.getElementById('rateName').textContent='No names yet';document.getElementById('rateProgress').textContent='Add names in Manage names';return}
+  rateIndex=Math.floor(Math.random()*pool.length);
+  document.getElementById('rateName').textContent=pool[rateIndex];
+  document.getElementById('rateProgress').textContent=Object.keys(rated).filter(n=>names.includes(n)).length+' of '+names.length+' rated';
+}
+function setRatingButtons(disabled){document.querySelectorAll('#ratingButtons button').forEach(b=>b.disabled=disabled)}
+async function simpleVote(r){
+  if(saving)return;
+  const n=document.getElementById('rateName').textContent.trim();
+  if(!n||n==='No names yet')return;
+  saving=true;setRatingButtons(true);setStatus('rateStatus','Saving…');
+  const previous=simple[person][n];
+  simple[person][n]=r;
+  try{
+    await rpc('save_simple_rating',{p_token:TOKEN,p_person:person,p_name:n,p_rating:r});
+    setStatus('rateStatus','Saved ✓','ok');
+    showRate();renderCompare();
+  }catch(e){
+    if(previous) simple[person][n]=previous; else delete simple[person][n];
+    setStatus('rateStatus','Could not save: '+e.message,'error');
+    console.error(e);
+  }finally{saving=false;setRatingButtons(false)}
+}
+function newPair(){
+  const aBtn=document.getElementById('a'),bBtn=document.getElementById('b');
+  if(names.length<2){pair=[];aBtn.textContent=names[0]||'Add names';bBtn.textContent='Need at least 2 names';aBtn.disabled=true;bBtn.disabled=true;return}
+  aBtn.disabled=false;bBtn.disabled=false;
+  let a,b;
+  do{a=names[Math.floor(Math.random()*names.length)];b=names[Math.floor(Math.random()*names.length)]}while(a===b);
+  pair=[a,b];aBtn.textContent=a;bBtn.textContent=b;
+}
+async function vote(w,l){
+  if(saving||pair.length!==2)return;
+  saving=true;document.getElementById('a').disabled=true;document.getElementById('b').disabled=true;setStatus('rankStatus','Saving…');
+  const W=stat(person,w),L=stat(person,l),k=24;
+  const ew=1/(1+10**((L.elo-W.elo)/400)),el=1/(1+10**((W.elo-L.elo)/400));
+  const nw={wins:Number(W.wins)+1,losses:Number(W.losses),elo:Math.round((Number(W.elo)+k*(1-ew))*10)/10};
+  const nl={wins:Number(L.wins),losses:Number(L.losses)+1,elo:Math.round((Number(L.elo)-k*el)*10)/10};
+  const oldW=ratings[person][w],oldL=ratings[person][l];
+  ratings[person][w]={name:w,...nw};ratings[person][l]={name:l,...nl};
+  try{
+    await Promise.all([
+      rpc('save_name_rating',{p_token:TOKEN,p_person:person,p_name:w,p_wins:nw.wins,p_losses:nw.losses,p_elo:nw.elo}),
+      rpc('save_name_rating',{p_token:TOKEN,p_person:person,p_name:l,p_wins:nl.wins,p_losses:nl.losses,p_elo:nl.elo})
+    ]);
+    setStatus('rankStatus','Saved ✓','ok');
+    newPair();renderCompare();
+  }catch(e){
+    if(oldW)ratings[person][w]=oldW;else delete ratings[person][w];
+    if(oldL)ratings[person][l]=oldL;else delete ratings[person][l];
+    setStatus('rankStatus','Could not save: '+e.message,'error');console.error(e);
+    document.getElementById('a').disabled=false;document.getElementById('b').disabled=false;
+  }finally{saving=false}
+}
+const ratingInfo={love:{emoji:'❤️',label:'Love it'},like:{emoji:'👍',label:'Like it'},maybe:{emoji:'🤔',label:'Maybe'},no:{emoji:'👎',label:'No'}};
+function pills(arr){return arr.length?arr.map(x=>'<span class="pill">'+escapeHtml(x)+'</span>').join(''):'<div class="small">None yet</div>'}
+function renderCompare(){
+ const m=simple.Madeline||{},d=simple.Daniel||{};
+ const bothLove=names.filter(n=>m[n]==='love'&&d[n]==='love');
+ const bothPositive=names.filter(n=>['love','like'].includes(m[n])&&['love','like'].includes(d[n])&&!bothLove.includes(n));
+ const bothMaybe=names.filter(n=>m[n]==='maybe'&&d[n]==='maybe');
+ const exactAgreement=names.filter(n=>m[n]&&d[n]&&m[n]===d[n]);
+ const disagreements=names.filter(n=>m[n]&&d[n]&&m[n]!==d[n]).map(n=>({name:n,m:m[n],d:d[n]})).sort((a,b)=>{const s={love:4,like:3,maybe:2,no:1};return Math.abs(s[b.m]-s[b.d])-Math.abs(s[a.m]-s[a.d])});
+ const oneLove=names.filter(n=>(m[n]==='love') !== (d[n]==='love') && m[n]&&d[n]);
+ const incomplete=names.filter(n=>Boolean(m[n])!==Boolean(d[n]));
+ const unrated=names.filter(n=>!m[n]&&!d[n]);
+ const ratingRows=names.filter(n=>m[n]||d[n]).map(n=>({name:n,m:m[n]||'',d:d[n]||''})).sort((a,b)=>{const s={love:4,like:3,maybe:2,no:1,'':0};return(s[b.m]+s[b.d])-(s[a.m]+s[a.d])});
+ const rows=names.map(n=>({name:n,m:Number(stat('Madeline',n).elo),d:Number(stat('Daniel',n).elo)})).map(r=>({...r,avg:(r.m+r.d)/2})).sort((a,b)=>b.avg-a.avg);
+ const ratingTable=ratingRows.length?'<table class="table"><tr><th>Name</th><th>Madeline</th><th>Daniel</th></tr>'+ratingRows.map(r=>'<tr><td>'+escapeHtml(r.name)+'</td><td>'+(r.m?ratingInfo[r.m].emoji+' '+ratingInfo[r.m].label:'—')+'</td><td>'+(r.d?ratingInfo[r.d].emoji+' '+ratingInfo[r.d].label:'—')+'</td></tr>').join('')+'</table>':'<div class="small">Start rating names to see your results here.</div>';
+ document.getElementById('compareBody').innerHTML=
+ '<div class="sectionCard highlight"><h2>🏆 Mutual favourites</h2><div class="small" style="text-align:left">Names you both rated ❤️ Love it</div>'+pills(bothLove)+'</div>'+
+ '<div class="sectionCard"><h2>💕 Strong agreement</h2><div class="small" style="text-align:left">Names you both rated positively (❤️ Love it or 👍 Like it)</div>'+pills(bothPositive)+'</div>'+
+ '<div class="sectionCard"><h2>🤝 Exact matches</h2><div class="small" style="text-align:left">Names you gave exactly the same rating</div>'+pills(exactAgreement)+'</div>'+
+ '<div class="sectionCard"><h2>🌱 Shared maybes</h2>'+pills(bothMaybe)+'</div>'+
+ '<div class="sectionCard"><h2>❤️ Only one person loves it</h2><div class="small" style="text-align:left">One of you loves it, but the other does not rate it as a love</div>'+pills(oneLove)+'</div>'+
+ '<div class="sectionCard"><h2>😬 Rating disagreements</h2>'+(disagreements.length?'<table class="table"><tr><th>Name</th><th>Madeline</th><th>Daniel</th></tr>'+disagreements.map(r=>'<tr><td>'+escapeHtml(r.name)+'</td><td>'+ratingInfo[r.m].emoji+' '+ratingInfo[r.m].label+'</td><td>'+ratingInfo[r.d].emoji+' '+ratingInfo[r.d].label+'</td></tr>').join('')+'</table>':'<div class="small">No disagreements yet.</div>')+'</div>'+
+ '<div class="sectionCard"><h2>📋 All rating results</h2>'+ratingTable+'</div>'+
+ '<div class="sectionCard"><h2>⏳ Still to rate</h2><div class="small" style="text-align:left">Rated by only one person: '+incomplete.length+' · Not rated by either of you: '+unrated.length+'</div>'+pills(incomplete)+'</div>'+
+ '<div class="sectionCard"><h2>🥊 Combined head-to-head ranking</h2><div class="small" style="text-align:left">Based on your separate head-to-head choices. Scores become more meaningful as you each make more comparisons.</div><table class="table"><tr><th>#</th><th>Name</th><th>Madeline</th><th>Daniel</th><th>Combined</th></tr>'+rows.map((r,i)=>'<tr><td>'+String(i+1)+'</td><td>'+escapeHtml(r.name)+'</td><td>'+Math.round(r.m)+'</td><td>'+Math.round(r.d)+'</td><td><b>'+Math.round(r.avg)+'</b></td></tr>').join('')+'</table></div>';
+}
+async function addName(){
+ const input=document.getElementById('newName');const n=input.value.trim();if(!n)return;
+ if(names.some(x=>x.toLocaleLowerCase()===n.toLocaleLowerCase())){setStatus('manageStatus','That name is already in the deck.','error');return}
+ const old=[...names];names.push(n);renderManage();setStatus('manageStatus','Saving…');
+ try{await saveNames();input.value='';setStatus('manageStatus','Name added ✓','ok');shuffleDeck();newPair();showRate();renderCompare()}catch(e){names=old;renderManage();setStatus('manageStatus','Could not save: '+e.message,'error')}
+}
+async function removeName(n){
+ if(!confirm('Remove "'+n+'" from the shared deck?'))return;
+ const old=[...names];names=names.filter(x=>x!==n);renderManage();setStatus('manageStatus','Saving…');
+ try{await saveNames();setStatus('manageStatus','Name removed ✓','ok');shuffleDeck();newPair();showRate();renderCompare()}catch(e){names=old;renderManage();setStatus('manageStatus','Could not save: '+e.message,'error')}
+}
+async function saveNames(){await rpc('save_name_deck',{p_token:TOKEN,p_names:names})}
+function renderManage(){
+ const list=document.getElementById('nameList');
+ list.innerHTML=names.length?names.map(n=>'<div class="nameItem"><span>'+escapeHtml(n)+'</span><button class="removeBtn" onclick="removeName('+JSON.stringify(n)+')">Remove</button></div>').join(''):'<div class="empty">No names yet.</div>';
+}
+document.getElementById('ratingButtons').addEventListener('click',e=>{const b=e.target.closest('button[data-rating]');if(b)simpleVote(b.dataset.rating)});
+document.getElementById('a').addEventListener('click',()=>vote(pair[0],pair[1]));document.getElementById('b').addEventListener('click',()=>vote(pair[1],pair[0]));
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.tab)));
+document.getElementById('newName').addEventListener('keydown',e=>{if(e.key==='Enter')addName()});
+let startX=null;document.getElementById('deck').addEventListener('touchstart',e=>startX=e.changedTouches[0].clientX,{passive:true});document.getElementById('deck').addEventListener('touchend',e=>{if(startX!==null&&Math.abs(e.changedTouches[0].clientX-startX)>45)nextDeck();startX=null},{passive:true});
+if(person)setPerson(person);
+</script>
+</body>
+</html>
